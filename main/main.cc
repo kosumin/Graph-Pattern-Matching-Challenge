@@ -3,10 +3,11 @@
  *
  */
 
-#include "backtrack.h"
-#include "candidate_set.h"
-#include "common.h"
-#include "graph.h"
+#include "../include/backtrack.h"
+#include "../include/candidate_set.h"
+#include "../include/common.h"
+#include "../include/graph.h"
+#include "../include/DAG.h"
 
 int main(int argc, char* argv[]) {
   if (argc < 4) {
