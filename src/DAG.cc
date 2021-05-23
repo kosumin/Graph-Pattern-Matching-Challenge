@@ -4,16 +4,21 @@
  */
 
 #include "../include/DAG.h"
+#include "../include/candidate_set.h"
 #include <queue>
 
-DAG::DAG(const Graph &G) {
+DAG::DAG(const Graph &G, const CandidateSet &cs) {
     int size = G.GetNumVertices();
     child.resize(size);
     parent.resize(size);
     Vertex rt = 0;
+    size_t min_size = cs.GetCandidateSize(rt);
     std::queue<Vertex> q;
-    for (Vertex v = 0; v < G.GetNumVertices(); v++) {
-        if (G.GetDegree(v) > G.GetDegree(rt)) rt = v;
+    for (Vertex v = 1; v < size; v++) {
+        if (min_size > cs.GetCandidateSize(v)) {
+            rt = v;
+            min_size = cs.GetCandidateSize(v);
+        }
     }
     root = rt;
     q.push(root);
@@ -36,18 +41,6 @@ DAG::DAG(const Graph &G) {
             }
         }
     }
-}
-
-Vertex DAG::GetChild(Vertex v, size_t i) {
-    std::set<Vertex>::iterator it = child[v].begin();
-    for (size_t j = 0; j < i; j++, it++);
-    return *it;
-}
-
-Vertex DAG::GetParent(Vertex v, size_t i) {
-    std::set<Vertex>::iterator it = parent[v].begin();
-    for (size_t j = 0; j < i; j++, it++);
-    return *it;
 }
 
 DAG::~DAG() {}
