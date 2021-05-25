@@ -13,11 +13,14 @@
 #include <stack>
 #include <queue>
 
+#include <chrono>
+
 using namespace std;
 
 struct weight_info {
     size_t weight;
     Vertex index;
+    vector<int> candidates;    
 };
 
 struct compare {
@@ -35,7 +38,7 @@ class Backtrack {
                        const CandidateSet &cs);
   void Backtracking(const Graph &data, const CandidateSet &cs, DAG &qd,
                   Vertex M[], int visited[], int32_t matched_num, const int32_t query_num,
-                  size_t* &W, priority_queue<struct weight_info, vector <struct weight_info>, compare> w);
+                  size_t** &W, priority_queue<struct weight_info, vector <struct weight_info>, compare> w);
 };
 
 #endif  // BACKTRACK_H_

@@ -14,7 +14,7 @@
 
 class DAG {
 public:
-    explicit DAG(const Graph &G, const CandidateSet &cs);
+    explicit DAG(const Graph &G, const CandidateSet &cs, const Graph &D);
     ~DAG();
 
     inline Vertex GetRoot() const;
