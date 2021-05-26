@@ -52,18 +52,18 @@ DAG::DAG(const Graph &G, const CandidateSet &cs, const Graph &data) {
     // Todo: how to select root?
     for (Vertex v = 0; v < size; v++) { 
 
-        /*
+        
         // Calulate initial C 
         count = 0;
         for (size_t i = 0; i < data.GetNumVertices(); i++)
         {
             if (data.GetLabel(i) == G.GetLabel(v) && data.GetDegree(i) >= G.GetDegree(v))
                 count++;
-        }*/   
+        }  
         //printf("%d : %d %d\n", v, count / G.GetDegree(v), G.GetDegree(v));
-        if (min_size > cs.GetCandidateSize(v) / G.GetDegree(v)) {
+        if (min_size > count / G.GetDegree(v)) {
             rt = v;
-            min_size = cs.GetCandidateSize(v) / G.GetDegree(v);
+            min_size = count / G.GetDegree(v);
        }
     }
 

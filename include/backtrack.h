@@ -21,7 +21,18 @@ struct weight_info {
 
 struct compare {
     bool operator() (const struct weight_info& w1, const struct weight_info& w2) {
-        return (w1.weight > w2.weight);
+        if (w1.weight > w2.weight)
+            return true;
+        else if (w1.weight == w2.weight)
+        {
+            if (w1.candidates.size() > w2.candidates.size())
+                return true;
+            else
+                return false;
+        }
+        else
+            return false;
+        
     }
 };
 

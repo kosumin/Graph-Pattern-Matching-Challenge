@@ -21,7 +21,7 @@ const Graph *tg;
 // compare weights of two vertexes for sorting candidate sets
 bool weight_compare(const size_t & v1, const size_t & v2)
 {
-    if (W[curr_v][v1] > W[curr_v][v2])
+    if (W[curr_v][v1] < W[curr_v][v2])
         return true;
     else
         return false;
@@ -271,9 +271,9 @@ void Backtrack::Backtracking(const Graph &data, const CandidateSet &cs, DAG &qd,
         if (curr_candidates.size() > 1)
             sort(curr_candidates.begin(), curr_candidates.end(), weight_compare);
 
-        /* debugging
-           printf("current: %d list %d weight: %d\n", curr, curr_candidates.size(), w.top().weight);
-           for (size_t k = 0; k < temp_can.size(); k++)
+        /* debugging*/
+           //printf("current: %d list %d weight: %d\n", curr, curr_candidates.size(), w.top().weight);
+           /*for (size_t k = 0; k < temp_can.size(); k++)
            printf("%d ", temp_can[k]);
            printf("\n");*/
 
