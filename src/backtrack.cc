@@ -11,32 +11,52 @@ Backtrack::~Backtrack() {}
 extern std::chrono::system_clock::time_point finish;
 int print_count = 0;
 
-void Backtrack::PrintAllMatches(const Graph &data, const Graph &query,
-                                const CandidateSet &cs)
+// an array to store weights of candidates for each vertex
+size_t **W;
+// current vertex for backtracking
+Vertex curr_v;
+
+const Graph *tg;
+
+// compare weights of two vertexes for sorting candidate sets
+bool weight_compare(const size_t & v1, const size_t & v2)
 {
+    if (W[curr_v][v1] > W[curr_v][v2])
+        return true;
+    else
+        return false;
+}
+
+void Backtrack::PrintAllMatches(const Graph &data, const Graph &query,
+        const CandidateSet &cs)
+{
+    tg = &data;
     std::cout << "t " << query.GetNumVertices() << "\n";
 
     // implement your code here.
-    //
+    // build DAG
     DAG qd(query, cs, data);
 
-    /*for (int j = 0; j < query.GetNumVertices(); j++)
-    {
-        int count = 0;
-        for (int i = 0; i < data.GetNumVertices(); i++)
-        {
-            if (data.GetLabel(i) == query.GetLabel(j) && data.GetDegree(i) >= query.GetDegree(j))
-                count++;
+    /* debugging
+       for (int j = 0; j < query.GetNumVertices(); j++)
+       {
+       int count = 0;
+       for (int i = 0; i < data.GetNumVertices(); i++)
+       {
+       if (data.GetLabel(i) == query.GetLabel(j) && data.GetDegree(i) >= query.GetDegree(j))
+       count++;
 
-        }
-        printf("%d count: %d cand: %d\n", j, count, cs.GetCandidateSize(j));
-    }*/
+       }
+       printf("%d count: %d cand: %d\n", j, count, cs.GetCandidateSize(j));
+       }*/
+
     const int32_t query_num = query.GetNumVertices();
     const int32_t data_num = data.GetNumVertices();
-    // path-size order
+
     Vertex *M = new Vertex[query_num];
     for (int32_t i = 0; i < query_num; i++) M[i] = qd.GetParentNum(i) - 1; 
-    size_t **W = new size_t*[query_num];
+    W = new size_t*[query_num];
+    // a priority queue to store weights of vertexes for backtracking
     priority_queue<struct weight_info, vector<struct weight_info>, compare> w;
     stack<Vertex> s;
     queue<Vertex> q;
@@ -58,6 +78,7 @@ void Backtrack::PrintAllMatches(const Graph &data, const Graph &query,
                 q.push(v);
         }
     }
+    // calculate the weights of candidates for each vertex
     while (!s.empty())
     {
         u = s.top();
@@ -78,7 +99,8 @@ void Backtrack::PrintAllMatches(const Graph &data, const Graph &query,
         {
             W[u] = new size_t[cs.GetCandidateSize(u)];
             for (size_t i = 0; i < cs.GetCandidateSize(u); i++)
-                W[u][i] = 0; 
+                W[u][i] = SIZE_MAX;
+            // Todo: better way?
             while (!q.empty())
             {
                 v = q.front();
@@ -87,7 +109,7 @@ void Backtrack::PrintAllMatches(const Graph &data, const Graph &query,
                 {
                     Vertex w = cs.GetCandidate(u, i);  
                     size_t temp = 0;
-                    
+
                     for (size_t j = 0; j < cs.GetCandidateSize(v); j++)
                     {
                         Vertex x = cs.GetCandidate(v, j);
@@ -100,276 +122,301 @@ void Backtrack::PrintAllMatches(const Graph &data, const Graph &query,
             }
         }
     }
-    int sum = 0;
-    for (size_t i = 0; i < cs.GetCandidateSize(qd.GetRoot()); i++)
-    {
-        sum += W[qd.GetRoot()][i];
-    }
-    w.push({sum, qd.GetRoot()});
-    for (size_t i = 0; i < query_num; i++) M[i] = -qd.GetParentNum(i) - 1;
+
+    // Update M as an array to store the matching information of each vertex 
+    for (int i = 0; i < query_num; i++) M[i] = -qd.GetParentNum(i) - 1;
+    // an array to check if a vertex is visited or not
     int *visited = new int[data_num];
-    for (int32_t i = 0; i < data_num; i++) visited[i] = 0;
-    Backtracking(data, cs, qd, M, visited, 0, query_num, W, w);
+    for (int i = 0; i < data_num; i++) visited[i] = 0;
+
+    // do backtracking
+    Backtracking(data, cs, qd, M, visited, 0, query_num, w);
+
+    delete[] visited;
+    delete[] M;
+    for (int i = 0; i < query_num; i++)
+    {
+        delete[] W[i];
+    }
+    delete[] W;
+
+    std::chrono::duration<double> left = finish - std::chrono::system_clock::now();
+    printf("c %lf\n", left.count());
 }
 
 void Backtrack::Backtracking(const Graph &data, const CandidateSet &cs, DAG &qd,
-                             Vertex M[], int visited[], int32_t matched_num, const int32_t query_num,
-                             size_t** &W, priority_queue<struct weight_info, vector<struct weight_info>, compare> w)
+        Vertex M[], int visited[], int32_t matched_num, const int32_t query_num,
+        std::priority_queue<struct weight_info, vector <struct weight_info>, compare> w)
 {
+
+    if (std::chrono::system_clock::now() >= finish)
+    {
+        printf("c 0\n");
+        exit(0);
+    }
+
     //std::cout << "matched num " << matched_num << "\n";
+    // Case 1: print the result of backtracking
     if (matched_num == query_num)
     {
-        if (std::chrono::system_clock::now() >= finish)
-            exit(0);
         printf("a");
         for (int32_t i = 0; i < query_num; i++)
         {
             printf(" %d", M[i]);
         }
         printf("\n");
+
         print_count++;
         if (print_count >= 100000)
+        {
+            std::chrono::duration<double> left = finish - std::chrono::system_clock::now();
+            printf("c %lf\n", left.count());
             exit(0);
+        }
     }
+    // Case 2: start backtracking
     else if (matched_num == 0)
     {
-        Vertex v = qd.GetRoot();
-        //printf("current: %d\n",v);
-        for (size_t j = 0; j < qd.GetChildNum(v); j++)
-            M[qd.GetChild(v, j)]++; 
-        for (size_t i = 0; i < cs.GetCandidateSize(v); i++)
+        Vertex r = qd.GetRoot();
+        // printf("current: %d\n",v);
+
+        size_t candidate_size = cs.GetCandidateSize(r);
+        // Todo: vector vs priority queue?
+        vector<size_t> candidates(candidate_size);
+        for (size_t i = 0; i < candidate_size; i++)
+            candidates[i] = i;
+        curr_v = r;
+        if (candidates.size() > 1)
+            sort(candidates.begin(), candidates.end(), weight_compare);
+
+        // Update to check if a child is extendable or not
+        for (size_t j = 0; j < qd.GetChildNum(r); j++)
+            M[qd.GetChild(r, j)]++; 
+
+        for (size_t i = 0; i < cs.GetCandidateSize(r); i++)
         {
-            priority_queue<struct weight_info, vector<struct weight_info>, compare> temp_w;
-            Vertex u = cs.GetCandidate(v, i);
+            Vertex u = cs.GetCandidate(r, candidates[i]);
             visited[u] = 1;
-            M[v] = u;
-            vector<int> store_can;
-            size_t store_weight = 0;
+            M[r] = u;
+
             bool cont = false;
-            //std::cout << "start point " << u << "\n";
-            /*for (int32_t l = 0; l < query_num; l++)
+            /* debugging
+               std::cout << "start point " << u << "\n";
+               for (int32_t l = 0; l < query_num; l++)
+               {
+               std::cout << M[l] << " ";
+               }
+               std::cout << "\n";
+               for (int32_t m = 0; m < data.GetNumVertices(); m++)
+               {
+               std::cout << visited[m] <<  " ";
+               }
+               std::cout << "\n\n";*/
+
+            // Update extendable vertexes
+            for (size_t j = 0; j < qd.GetChildNum(r); j++)
             {
-                std::cout << M[l] << " ";
-            }
-            std::cout << "\n";*/
-            /*for (int32_t m = 0; m < data.GetNumVertices(); m++)
-            {
-                std::cout << visited[m] <<  " ";
-            }
-            std::cout << "\n\n";*/
-            for (size_t j = 0; j < qd.GetChildNum(v); j++)
-            {
-                Vertex x = qd.GetChild(v, j);
-                if (M[x] == -1)
+                Vertex c = qd.GetChild(r, j);
+                if (M[c] == -1)
                 {
-                    int weight = 0;
-                    vector<int> vs;
-                    for (size_t l = 0; l < cs.GetCandidateSize(x); l++)
+                    size_t weight = 0;
+                    vector<int> c_candidates;
+                    for (size_t l = 0; l < cs.GetCandidateSize(c); l++)
                     {
-                        Vertex y = cs.GetCandidate(x, l);
+                        Vertex y = cs.GetCandidate(c, l);
                         if (data.IsNeighbor(u, y)) 
                         {
-                            weight += W[x][l];
-                            vs.push_back(y);
+                            weight += W[c][l];
+                            c_candidates.push_back(l);
                         }
                     }
                     if (weight == 0)
                     {
-                        visited[u] = 0;
-                        M[v] = -1;
                         cont = true;
                         break;  
                     }
-                    temp_w.push({weight, x, vs});
+                    w.push({weight, c, c_candidates});
                     //printf("%d: (%d) \n", x, weight);
                 }
             }
             if (cont == true)
             {
+                visited[u] = 0;
+                M[r] = -1;
+                while (!w.empty())
+                    w.pop();
                 continue;
             }
-            //printf("\n");
+
+            // do backtracking
+            Backtracking(data, cs, qd, M, visited, matched_num + 1, query_num, w);
+
+            while (!w.empty())
+                w.pop();
+            visited[u] = 0;
+        }
+    }
+    // Case 3: during backtracking
+    else
+    {
+        // find undecided vertex with the smallest weight in query
+        Vertex curr = w.top().index;
+        curr_v = curr;
+        vector<int> curr_candidates = w.top().candidates;
+        size_t curr_weight = w.top().weight;
+        w.pop();
+
+        // Todo: how to choose the order of the candidate set?
+        // sort the candidate set
+        if (curr_candidates.size() > 1)
+            sort(curr_candidates.begin(), curr_candidates.end(), weight_compare);
+
+        /* debugging
+           printf("current: %d list %d weight: %d\n", curr, curr_candidates.size(), w.top().weight);
+           for (size_t k = 0; k < temp_can.size(); k++)
+           printf("%d ", temp_can[k]);
+           printf("\n");*/
+
+        int children[query_num];
+        int **children_candidates = new int*[qd.GetChildNum(curr)];
+        for (int j =0; j < query_num; j++) children[j] = 0;
+        for (size_t j = 0; j < qd.GetChildNum(curr); j++)
+        {
+            Vertex x = qd.GetChild(curr, j);
+            children[x] = 1;
+            M[x]++;
+            if (M[x] == -1)
+            {
+                children_candidates[j] = new int[cs.GetCandidateSize(x)];
+                for (size_t l = 0; l < cs.GetCandidateSize(x); l++)
+                {
+                    children_candidates[j][l] = 0;
+                    Vertex y = cs.GetCandidate(x, l);
+                    bool contain = true;
+                    for (size_t m = 0; m < qd.GetParentNum(x); m++)
+                    {
+                        Vertex pp = qd.GetParent(x, m);
+                        if (pp == curr)
+                            continue ;
+                        Vertex p = M[pp];
+                        if (!data.IsNeighbor(p, y))
+                        {
+                            contain = false;
+                            break;
+                        }
+                    }
+                    if (contain)
+                        children_candidates[j][l] += W[x][l];
+                }
+            }
+        }
+
+        for (size_t j = 0; j < curr_candidates.size(); j++)
+        {
+            Vertex candidate = cs.GetCandidate(curr, curr_candidates[j]);
+            std::priority_queue<struct weight_info, vector <struct weight_info>, compare> temp_w;
+
+            //std::cout << i << " candidate: " << candidate << "\n";
+
+            // check if the candidate is visited or not
+            if (visited[candidate] == 1)
+                continue;
+
+            /*bool extendable = true;
+              for (size_t k = 0; k < qd.GetParentNum(curr); k++)
+              {
+              Vertex c_parent = M[qd.GetParent(curr, k)];
+            //std::cout << i << " candidate: " << candidate << " parent: " << qd.GetParent(i, k) << "\n";
+            if (c_parent == -1) extendable = false;
+            else if (!data.IsNeighbor(candidate, c_parent)) extendable = false;
+            }
+            if (extendable == false)
+            continue;
+             */
+            visited[candidate] = 1;
+            M[curr] = candidate;
+            bool cont = false;
+
+            /*std::cout << "QV " << curr << " DV " << candidate << "\n";
+               std::cout << "matched " << matched_num << "\n";
+               for (int32_t l = 0; l < query_num; l++)
+               {
+               std::cout << M[l] << " ";
+               }
+               std::cout << "\n";*/
+            /*for (int32_t m = 0; m < data.GetNumVertices(); m++)
+              {
+              std::cout << visited[m] <<  " ";
+              }*/
+            //std::cout << "\n\n";
+            for (size_t o = 0; o < qd.GetChildNum(curr); o++)
+            {
+                Vertex x = qd.GetChild(curr, o);
+                if (M[x] == -1)
+                {
+                    size_t weight = 0;
+                    vector<int> vs;
+                    for (size_t l = 0; l < cs.GetCandidateSize(x); l++)
+                    {
+                        Vertex y = cs.GetCandidate(x, l);
+                        if (data.IsNeighbor(candidate, y) && children_candidates[o][l] > 0)
+                        {
+                            weight += children_candidates[o][l];
+                            vs.push_back(l);  
+                        }
+                    }
+                    if (weight == 0)
+                    {
+                        cont = true;
+                        break;
+                    }
+                    temp_w.push({weight, x, vs});
+                    //printf("%d: (%d %d) ", x, weight);
+                }       
+            }
+            if (cont == true)
+            {
+                visited[candidate] = 0;
+                M[curr] = -1;
+                continue;
+            }
             while (!w.empty())
             {
                 Vertex x = w.top().index;
                 size_t weight = w.top().weight;
                 vector<int> vs = w.top().candidates;
                 w.pop();
-                if (x == v)
+                if (children[x] == 0)
                 {
-                    store_weight = weight;
-                    store_can = vs;
-                    continue;
+                    temp_w.push({weight, x, vs});
+                    //printf("%d: (%d) ", x, weight); 
                 }
-                temp_w.push({weight, x, vs});
-                //printf("%d: (%d) ", x, weight); 
             }
             //printf("\n");
-            Backtracking(data, cs, qd, M, visited, matched_num+1, query_num, W, temp_w);
-            w.push({store_weight, v, store_can});
+            Backtracking(data, cs, qd, M, visited, matched_num + 1, query_num, temp_w);
             while (!temp_w.empty())
             {
                 Vertex x = temp_w.top().index;
                 size_t weight = temp_w.top().weight;
                 vector<int> vs = temp_w.top().candidates;
                 temp_w.pop();
-                bool isChild = false;
-                for (size_t j = 0; j < qd.GetChildNum(v); j++)
-                {
-                    Vertex y = qd.GetChild(v, j);
-                    if (y == x)
-                    {
-                        isChild = true;
-                        break;
-                    }
-                }
-                if (!isChild)
+                if (children[x] == 0)
                 {
                     w.push({weight, x, vs});
                 }
             }
-            visited[u] = 0;
+            visited[candidate] = 0;
+            M[curr] = -1;
         }
-    }
-    else
-    {
-        // find undecided vertex in query
-        Vertex i = w.top().index;
-        vector<int> temp_can = w.top().candidates;
-        printf("current: %d list %d weight: %d\n", i, temp_can.size(), w.top().weight);
-        /*for (size_t k = 0; k < temp_can.size(); k++)
-            printf("%d ", temp_can[k]);
-        printf("\n");*/
-        size_t sum = w.top().weight;
-        int children[query_num];
-        for (size_t j =0; j < query_num; j++) children[j] = 0;
-        for (size_t j = 0; j < qd.GetChildNum(i); j++)
+        w.push({curr_weight, curr, curr_candidates});
+        for (size_t j = 0; j < qd.GetChildNum(curr); j++)
         {
-            M[qd.GetChild(i, j)]++;
-            children[qd.GetChild(i,j)] = 1;
-        }
-        for (size_t j = 0; j < temp_can.size(); j++)
-        {
-            if (sum <= 0)
-                continue ;
-            bool extendable = true;
-            Vertex candidate = temp_can[j];
-                    //std::cout << i << " candidate: " << candidate << "\n";
-                    //for each candidate see if the parents are valid
-            if (visited[candidate] == 1)
-                continue;
-            /*for (size_t k = 0; k < qd.GetParentNum(i); k++)
+            if (M[qd.GetChild(curr,j)] == -1)
             {
-                Vertex c_parent = M[qd.GetParent(i, k)];
-                //std::cout << i << " candidate: " << candidate << " parent: " << qd.GetParent(i, k) << "\n";
-                if (c_parent == -1) extendable = false;
-                else if (!data.IsNeighbor(candidate, c_parent)) extendable = false;
-            }*/
-            if (extendable && visited[candidate] == 0)
-            {
-                sum -= W[i][j];
-                priority_queue<struct weight_info, vector<struct weight_info>, compare> temp_w;
-                size_t store_weight = 0;
-                visited[candidate] = 1;
-                M[i] = candidate;
-                vector<int> store_can;
-                bool cont = false;
-                    std::cout << "QV " << i << " DV " << candidate << "\n";
-                    std::cout << "matched " << matched_num << "\n";
-                    for (int32_t l = 0; l < query_num; l++)
-                    {
-                        std::cout << M[l] << " ";
-                    }
-                        std::cout << "\n";
-                        /*for (int32_t m = 0; m < data.GetNumVertices(); m++)
-                        {
-                            std::cout << visited[m] <<  " ";
-                        }*/
-                        //std::cout << "\n\n";
-                for (size_t o = 0; o < qd.GetChildNum(i); o++)
-                {
-                    Vertex x = qd.GetChild(i, o);
-                    if (M[x] == -1)
-                    {
-                      
-                            int weight = 0;
-                            vector<int> vs;
-                            for (size_t l = 0; l < cs.GetCandidateSize(x); l++)
-                            {
-                                Vertex y = cs.GetCandidate(x, l);
-                                if (visited[y] == 0 && data.IsNeighbor(candidate, y)) 
-                                {
-                                    bool contain = true;
-                                    for (size_t m = 0; m < qd.GetParentNum(x); m++)
-                                    {
-                                        Vertex pp = M[qd.GetParent(x, m)];
-                                        if (!data.IsNeighbor(pp, y) || pp == y)
-                                        {
-                                            contain = false;
-                                            break;
-                                        }
-                                    }
-                                    if (contain)
-                                    {
-                                        weight += W[x][l];
-                                        vs.push_back(y);  
-                                    }
-                                }
-
-                            }
-                            if (weight == 0)
-                            {
-                                visited[candidate] = 0;
-                                M[i] = -1;
-                                cont = true;
-                                break;
-                            }
-                            temp_w.push({weight, x, vs});
-                            //printf("%d: (%d %d) ", x, weight);
-                        }       
-                    }
-                    if (cont == true)
-                    {
-                    continue;}
-                while (!w.empty())
-                {
-                    Vertex x = w.top().index;
-                    size_t weight = w.top().weight;
-                    vector<int> vs = w.top().candidates;
-                    w.pop();
-                    if (x == i)
-                    {
-                        store_weight = weight;
-                        store_can = vs;
-                        continue;
-                    }
-                    if (children[x] == 0)
-                    {
-                        temp_w.push({weight, x, vs});
-                        //printf("%d: (%d) ", x, weight); 
-                    }
-                }
-                //printf("\n");
-                Backtracking(data, cs, qd, M, visited, matched_num+1, query_num, W, temp_w);
-                w.push({store_weight, i, store_can});
-                while (!temp_w.empty())
-                {
-                    Vertex x = temp_w.top().index;
-                    size_t weight = temp_w.top().weight;
-                    vector<int> vs = temp_w.top().candidates;
-                    temp_w.pop();
-                    if (children[x] == 0)
-                    {
-                        w.push({weight, x, vs});
-                    }
-                }   
-                visited[candidate] = 0;
-                M[i] = -1;
+                delete children_candidates[j];
             }
+            M[qd.GetChild(curr, j)]--;
         }
-        for (size_t j = 0; j < qd.GetChildNum(i); j++)
-        {
-            M[qd.GetChild(i, j)]--;
-        }
+        delete children_candidates;
     }
 }
