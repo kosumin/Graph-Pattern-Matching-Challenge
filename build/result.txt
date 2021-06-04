@@ -1,0 +1,48 @@
+lcc_hprd_n1_test
+correct: 96 incorrect: 0 left time: 59.955
+lcc_hprd_n3_test
+correct: 100000 incorrect: 0 left time: 59.2221
+lcc_hprd_n5_test
+correct: 32832 incorrect: 0 left time: 59.5993
+lcc_hprd_n8_test
+correct: 100000 incorrect: 0 left time: 58.5816
+lcc_hprd_s1_test
+correct: 504 incorrect: 0 left time: 59.9516
+lcc_hprd_s3_test
+correct: 100000 incorrect: 0 left time: 59.2141
+lcc_hprd_s5_test
+correct: 100000 incorrect: 0 left time: 58.8344
+lcc_hprd_s8_test
+correct: 100000 incorrect: 0 left time: 58.3936
+lcc_human_n1_test
+correct: 100000 incorrect: 0 left time: 59.8378
+lcc_human_n3_test
+correct: 100000 incorrect: 0 left time: 56.9925
+lcc_human_n5_test
+correct: 100000 incorrect: 0 left time: 29.1028
+lcc_human_n8_test
+correct: 100000 incorrect: 0 left time: 59.6537
+lcc_human_s1_test
+correct: 100000 incorrect: 0 left time: 59.8491
+lcc_human_s3_test
+correct: 100000 incorrect: 0 left time: 59.7198
+lcc_human_s5_test
+correct: 100000 incorrect: 0 left time: 59.7033
+lcc_human_s8_test
+correct: 0 incorrect: 0 left time: 0
+lcc_yeast_n1_test
+correct: 100000 incorrect: 0 left time: 59.5783
+lcc_yeast_n3_test
+correct: 100000 incorrect: 0 left time: 43.2467
+lcc_yeast_n5_test
+correct: 100000 incorrect: 0 left time: 58.8386
+lcc_yeast_n8_test
+correct: 100000 incorrect: 0 left time: 47.1083
+lcc_yeast_s1_test
+correct: 100000 incorrect: 0 left time: 59.6015
+lcc_yeast_s3_test
+correct: 100000 incorrect: 0 left time: 14.4703
+lcc_yeast_s5_test
+correct: 100000 incorrect: 0 left time: 39.5188
+lcc_yeast_s8_test
+correct: 0 incorrect: 0 left time: 0
