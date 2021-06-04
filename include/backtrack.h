@@ -21,21 +21,21 @@ struct weight_info {
 
 struct compare {
     bool operator() (const struct weight_info& w1, const struct weight_info& w2) {
-        if (w1.weight > w2.weight)
-            return true;
-        /*if (w1.weight != 0 && w1.candidates.size() == 1)
+        /*if (w1.weight > w2.weight)
+            return true;*/
+        if (w1.weight != 0 && w1.candidates.size() == 1)
             return false;
         else if (w2.weight != 0 && w2.candidates.size() == 1)
             return true;
         else if (w1.weight * w1.candidates.size() > w2.weight * w2.candidates.size())
-            return true;*/
-        else if (w1.weight == w2.weight)
+            return true;
+        /*else if (w1.weight == w2.weight)
         {
             if (w1.candidates.size() > w2.candidates.size())
                 return true;
             else
                 return false;
-        }
+        }*/
         else
             return false;
     }
