@@ -8,7 +8,6 @@
 Backtrack::Backtrack() {}
 Backtrack::~Backtrack() {}
 
-extern std::chrono::system_clock::time_point finish;
 int print_count = 0;
 
 // an array to store weights of candidates for each vertex
@@ -135,21 +134,12 @@ void Backtrack::PrintAllMatches(const Graph &data, const Graph &query,
     }
     delete[] candidates_weight;
 
-    std::chrono::duration<double> left = finish - std::chrono::system_clock::now();
-    printf("c %lf\n", left.count());
 }
 
 void Backtrack::Backtracking(const Graph &data, const CandidateSet &cs, DAG &qd,
                              Vertex M[], int visited[], int32_t matched_num, const int32_t query_num,
                              std::priority_queue<struct weight_info, vector <struct weight_info>, compare> weight_queue)
 {
-    //std::cout << "matched: " << matched_num << endl;
-    if (std::chrono::system_clock::now() >= finish)
-    {
-        printf("c 0\n");
-        exit(0);
-    }
-
     // Case 1: print the result of backtracking
     if (matched_num == query_num)
     {
@@ -163,11 +153,7 @@ void Backtrack::Backtracking(const Graph &data, const CandidateSet &cs, DAG &qd,
 
         print_count++;
         if (print_count >= 100000)
-        {
-            std::chrono::duration<double> left = finish - std::chrono::system_clock::now();
-            printf("c %lf %d\n", left.count(), print_count);
             exit(0);
-        }
     }
     // Case 2: start backtracking
     else if (matched_num == 0)
