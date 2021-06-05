@@ -3,10 +3,11 @@
  *
  */
 
-#include "backtrack.h"
-#include "candidate_set.h"
-#include "common.h"
-#include "graph.h"
+#include "../include/backtrack.h"
+#include "../include/candidate_set.h"
+#include "../include/common.h"
+#include "../include/graph.h"
+#include "../include/DAG.h"
 
 int main(int argc, char* argv[]) {
   if (argc < 4) {
@@ -14,7 +15,7 @@ int main(int argc, char* argv[]) {
                  "<candidate set file>\n";
     return EXIT_FAILURE;
   }
-
+  
   std::string data_file_name = argv[1];
   std::string query_file_name = argv[2];
   std::string candidate_set_file_name = argv[3];
